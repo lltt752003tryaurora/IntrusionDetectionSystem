@@ -1,138 +1,39 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-
-import Traffic from "./components/Traffic";
-import Sidenav from "./components/Sidenav";
-import Alert from "./components/Alert";
-import Logs from "./components/Logs";
-import Scatter from "./components/Scatter";
-import Landing from "./components/Landing";
-import Bar from "./components/Bar";
-import Form from "./components/Form";
-import Pie from "./components/Pie";
-import ShowMore from "./components/ShowMore";
-import { monitoring, notMonitoring } from "./redux/monitorSlice";
-import { appendData } from "./redux/trafficSlice";
-import { updateLog } from "./redux/logSlice";
-import { updateScatter } from "./redux/scatterSlice";
+// react-router-dom
+import { Routes, Route, Navigate } from "react-router-dom";
+import UserTemplate from "./template/HomeTemplate/UserTemplate";
+import Home from "./page/Home/Home";
+import Login from "./page/User/Login/Login";
+import SignUp from "./page/User/SignUp/SignUp";
+import Error from "./page/Error/Error";
+import LandingPage from "./page/Home/LandingPage/LandingPage";
+import DashBoard from "./page/Home/DashBoard/DashBoard";
+import CreateProject from "./page/Home/Project/CreateProject";
+import ProjectManagement from "./page/Home/Management/ProjectManagement";
+import ProjectDetail from "./page/Home/Project/ProjectDetail";
+import UserDetails from "./page/Home/Profile/profile";
 
 function App() {
-    const dispatch = useDispatch();
-    const monitorState = useSelector((state) => state.monitor.value);
-    const lastTrafficType = useSelector((state) => state.log.lastTrafficType);
-    const customTesting = useSelector((state) => state.monitor.customTesting);
-    const { attack } = useSelector((state) => state.log);
-    const showMoreRowNumber = useSelector(
-        (state) => state.traffic.showMoreRowNumber
-    );
-    const logsLength = useSelector((state) => state.log.data.length);
-    const trafficDataLength = useSelector((state) => state.traffic.data.length);
+  return (
+    <>
+      <Routes>
+        <Route index element={<LandingPage />} />
+        <Route path="/" element={<UserTemplate />}>
+          <Route path="manage-project" element={<Home />}>
+            <Route path="dashboard" element={<DashBoard />} />
+            <Route path="project-manage" element={<ProjectManagement />} />
+            <Route path="project-detail/:projectId" element={<ProjectDetail />} />
+            <Route path="project-detail" element={<ProjectDetail />} />
+            <Route path="profile" element={<UserDetails />} />
+            <Route path="create-project" element={<CreateProject />} />
+          </Route>
+        </Route>
 
-    useEffect(() => {
-        const fetchMonitorState = () => {
-            fetch("http://localhost:3001/getMonitorState", {
-                method: "GET",
-            })
-                .then((res) => {
-                    return res.json();
-                })
-                .then((data) => {
-                    if (data.state) {
-                        dispatch(monitoring());
-                    } else {
-                        dispatch(notMonitoring());
-                    }
-                });
-        };
-
-        const fetchTrafficData = () => {
-            const url = `http://localhost:3001/getTrafficData?dataCount=${encodeURIComponent(
-                trafficDataLength
-            )}`;
-            fetch(url, {
-                method: "GET",
-            })
-                .then((res) => {
-                    return res.json();
-                })
-                .then(({ data, cols }) => {
-                    dispatch(appendData([data, cols]));
-                });
-        };
-
-        const fetchLogData = () => {
-            const url = `http://localhost:3001/getLogData?logCount=${encodeURIComponent(
-                logsLength
-            )}`;
-            fetch(url, {
-                method: "GET",
-            })
-                .then((res) => {
-                    return res.json();
-                })
-                .then((data) => {
-                    dispatch(updateLog(data.logs));
-                });
-        };
-
-        const fetchScatterData = () => {
-            fetch("http://localhost:3001/get-scatterData", {
-                method: "GET",
-            })
-                .then((res) => {
-                    return res.json();
-                })
-                .then((data) => {
-                    dispatch(updateScatter(data.scatterData));
-                });
-        };
-
-        fetchMonitorState();
-
-        const monitorHandle = setInterval(fetchMonitorState, 1000);
-        const trafficHandle = setInterval(fetchTrafficData, 1000);
-        const logHandle = setInterval(fetchLogData, 1000);
-        const scatterHandle = setInterval(fetchScatterData, 1000);
-
-        return () => {
-            clearInterval(monitorHandle);
-            clearInterval(trafficHandle);
-            clearInterval(logHandle);
-            clearInterval(scatterHandle);
-        };
-    }, [dispatch, logsLength, trafficDataLength]);
-
-    return monitorState || customTesting ? (
-        <Router>
-            <div className="container">
-                <div className="mathi_div">
-                    <Sidenav />
-                    <Routes>
-                        <Route
-                            exact
-                            path="/"
-                            element={
-                                showMoreRowNumber ? <ShowMore /> : <Traffic />
-                            }
-                        />
-                        <Route exact path="/form" element={<Form />} />
-                        <Route exact path="/logs" element={<Logs />} />
-                        <Route exact path="/scatter" element={<Scatter />} />
-                        <Route exact path="/bar" element={<Bar />} />
-                        <Route exact path="/pie" element={<Pie />} />
-                    </Routes>
-                </div>
-                <div className={`tala_div ${attack}`} id="alert">
-                    <Alert testData={lastTrafficType} />
-                </div>
-            </div>
-        </Router>
-    ) : (
-        <Router>
-            <Landing />
-        </Router>
-    );
+        <Route path="sign-in" element={<Login />} />
+        <Route path="sign-up" element={<SignUp />} />
+        <Route path="error" element={<Error />} />
+      </Routes>
+    </>
+  );
 }
 
 export default App;

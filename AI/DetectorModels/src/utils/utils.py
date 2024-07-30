@@ -50,7 +50,7 @@ def parse_args():
 
     # LightGBM parameters
     parser.add_argument("--num_leaves", type=int, default=31, help="Number of leaves in LightGBM")
-    parser.add_argument("--feature_fraction", type=float, default=0.9, help="Feature fraction for LightGBM")
+    parser.add_argument("--feature_fraction", type=float, default=0.8, help="Feature fraction for LightGBM")
     parser.add_argument("--bagging_fraction", type=float, default=0.8, help="Bagging fraction for LightGBM")
     parser.add_argument("--bagging_freq", type=int, default=5, help="Bagging frequency for LightGBM")
     parser.add_argument("--num_boost_round", type=int, default=100, help="Number of boosting rounds")
@@ -75,7 +75,7 @@ def parse_args():
 
 def fetch_model(CONFIG):
     if CONFIG["model_name"] == "MLP":
-        model = MLP(input_dim=CONFIG["input_dim"], hidden_dims=[128, 64], output_dim=2)
+        model = MLP(input_dim=CONFIG["input_dim"], hidden_dims=[64, 32], output_dim=1)
     else:
         raise ValueError(f"Model {CONFIG['model_name']} is not recognized.")
     

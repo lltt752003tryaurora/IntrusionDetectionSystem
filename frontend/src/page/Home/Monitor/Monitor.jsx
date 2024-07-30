@@ -75,6 +75,11 @@ const Monitor = () => {
 
   const columns = [
     {
+      title: "Order",
+      key: "order",
+      render: (text, record, index) => index + 1,
+    },
+    {
       title: "Protocol",
       dataIndex: "proto",
       key: "proto",

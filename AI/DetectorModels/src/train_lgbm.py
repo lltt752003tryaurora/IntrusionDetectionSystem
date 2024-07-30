@@ -2,10 +2,11 @@ import gc
 import os
 import time
 import joblib
+from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 import lightgbm as lgb
-from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
+from sklearn.metrics import f1_score, precision_recall_curve, precision_score, recall_score, accuracy_score, roc_auc_score
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from data.data_loading import load_data
 from data.data_processing import process_data
@@ -30,14 +31,16 @@ def train_lgbm(X_train, y_train, X_valid, y_valid, CONFIG):
     lgb_valid = lgb.Dataset(X_valid, y_valid, reference=lgb_train)
 
     params = {
-        'boosting_type': 'gbdt',
         'objective': 'binary',
-        'metric': 'binary_logloss',
-        'num_leaves': CONFIG["num_leaves"],
+        'metric': 'auc',
+        'num_leaves': 31,
         'learning_rate': CONFIG["learning_rate"],
-        'feature_fraction': CONFIG["feature_fraction"],
+        'feature_fraction': CONFIG['feature_fraction'],
         'bagging_fraction': CONFIG["bagging_fraction"],
         'bagging_freq': CONFIG["bagging_freq"],
+
+        'boost_from_average': True,
+        'boosting_type': 'gbdt',
         'verbose': 1,
     }
 
@@ -45,7 +48,7 @@ def train_lgbm(X_train, y_train, X_valid, y_valid, CONFIG):
     model = lgb.train(params,
                       lgb_train,
                       num_boost_round=CONFIG["num_boost_round"],
-                      valid_sets=[lgb_train, lgb_valid])
+                      valid_sets=[lgb_valid])
     print("[INFO] Training completed.")
 
     return model
@@ -62,8 +65,16 @@ def evaluate_model(model, X_test, y_test):
     Returns:
         dict: Dictionary with evaluation metrics.
     """
-    y_pred = model.predict(X_test, num_iteration=model.best_iteration)
-    y_pred = (y_pred > 0.5).astype(int)
+    y_pred_proba = model.predict(X_test, num_iteration=model.best_iteration)
+    print(y_pred_proba[:100])
+    
+    precision, recall, thresholds = precision_recall_curve(y_test, y_pred_proba)
+    f1_scores = 2 * recall * precision / (recall + precision)
+    best_threshold = thresholds[np.argmax(f1_scores)]
+    print(f"Best threshold: {best_threshold}")
+
+    # Apply the best threshold
+    y_pred = (y_pred_proba > 0.5).astype(int)
 
     # Number of negatives
     print(np.sum(y_test == 0))
@@ -74,18 +85,26 @@ def evaluate_model(model, X_test, y_test):
     f1 = f1_score(y_test, y_pred)
     recall = recall_score(y_test, y_pred)
     precision = precision_score(y_test, y_pred)
+    auroc = roc_auc_score(y_pred, y_pred_proba)
 
     metrics = {
         'accuracy': accuracy,
         'f1': f1,
         'recall': recall,
-        'precision': precision
+        'precision': precision, 
+        'auroc': auroc
     }
 
     print(f'Accuracy: {accuracy:.4f}')
     print(f'F1 Score: {f1:.4f}')
     print(f'Recall: {recall:.4f}')
     print(f'Precision: {precision:.4f}')
+    print(f'AUROC: {auroc:.4f}')
+
+    # Print feature importances
+    lgb.plot_importance(model, importance_type="split", figsize=(7,6), title="LightGBM Feature Importance (Split)")
+    plt.show()
+
 
     return metrics
 

@@ -18,7 +18,7 @@ def lgbm_inference(df_origin, encoder, scaler):
     prediction = lgbm_model.predict(df, predict_disable_shape_check=True)
     print(prediction)
     # Convert prediction to intrusion boolean
-    is_intrusion = (prediction > 0.6).astype(int)
+    is_intrusion = (prediction > 0.5).astype(int)
     
     return is_intrusion
 

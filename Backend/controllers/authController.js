@@ -46,6 +46,27 @@ const controller = {
                 message: 'Error logging user in.'
             });
         }
+    },
+
+    logout: async (req, res, next) => {
+        if (req.session) {
+            req.session.destroy(error => {
+                if (error) {
+                    console.error(error.message);
+                    return res.status(500).send({
+                        message: 'Error logging out.'
+                    });
+                } else {
+                    res.status(200).send({
+                        message: 'Logout successfully.'
+                    });
+                }
+            });
+        } else {
+            res.status(200).send({
+                message: 'No active session.'
+            });
+        }
     }
 }
 

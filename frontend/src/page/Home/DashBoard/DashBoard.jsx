@@ -7,8 +7,21 @@ import "./DashBoard.scss";
 import { Cell, Legend, Pie, PieChart, Tooltip } from "recharts";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllProjectAPI } from "../../../redux/projectSlice";
+import { useNavigate } from "react-router-dom";
+import { setDataUser } from "../../../redux/userSlice";
 
 const DashBoard = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const userLocal = JSON.parse(localStorage.getItem("USER_LOGIN"));
+    if (userLocal) {
+      navigate("/manage-project/dashboard");
+      // window.location.reload(true);
+      dispatch(setDataUser(userLocal));
+    } else {
+      navigate("/");
+    }
+  }, []);
   const { arrAllProjects } = useSelector((state) => state.projectSlice);
   const [categoryData, setCategoryData] = useState([]);
   const dispatch = useDispatch();

@@ -1,18 +1,21 @@
 const express = require('express');
-const yaml_config = require('node-yaml-config');
+const cors = require('cors');
 const { connect } = require('./db/index');
-const { sendEmail } = require('./services/emailService');
 const sesssion = require('express-session');
 const MongoStore = require('connect-mongo');
+const config = require('./services/configService');
 
 const startServer = async () => {
     try {
         const app = express();
 
-        const ENVIRONMENT = process.env.ENVIRONMENT || 'development';
-        const config = yaml_config.load(__dirname + '/config/config.yaml', ENVIRONMENT);
+        app.use(cors({
+            origin: 'http://localhost:3001',
+            methods: ['GET', 'POST', 'PUT', 'DELETE'],
+            allowedHeaders: ['Content-Type', 'Authorization'],
+        }));
 
-        const db = await connect(config.database.uri);
+        await connect(config.database.uri);
         console.log('Connected to database.');
 
         app.use(sesssion({
@@ -32,7 +35,7 @@ const startServer = async () => {
 
         app.use(`/${config.api.version}`, require('./routes/apiRouter'));
 
-        const PORT = process.env.PORT || 3030;
+        const PORT = process.env.PORT || 3000;
         app.listen(PORT, () => {
             console.log(`Listening on port ${PORT}...`);
         });
@@ -41,14 +44,4 @@ const startServer = async () => {
     }
 }
 
-startServer()
-    // .then(() => {
-    //     sendEmail({
-    //         // to: 'tohienvinh@gmail.com',
-    //         tos: ['tohienvinh@gmail.com', 'ezionoir@outlook.com'],
-    //         details: {
-    //             time: Date.now(),
-    //             suspectedThreats: ['DDOS', 'DOS']
-    //         }
-    //     });
-    // });
+startServer();

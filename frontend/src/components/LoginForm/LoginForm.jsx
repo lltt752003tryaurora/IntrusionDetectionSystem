@@ -9,6 +9,7 @@ import { TOKEN, USER_LOGIN } from "../../util/constant/settingSystem";
 import { useDispatch, useSelector } from "react-redux";
 import { storePassWord } from "../../redux/userSlice";
 import Password from "antd/es/input/Password";
+import { login } from "../../util/fetchFromAPI";
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,7 +17,7 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { passWord } = useSelector((state) => state.userSlice);
-  console.log(passWord)
+  console.log(passWord);
 
   if (isLoggedIn()) {
     navigate("/manage-project/dashboard");
@@ -25,40 +26,27 @@ const LoginForm = () => {
 
   const formik = useFormik({
     initialValues: {
-      email: "",
+      username: "",
       password: "",
     },
-    onSubmit: (values) => {
-      console.log(values.password);
-      manageUserServ
-        .signin(values)
-        .then((res) => {
-          console.log(res);
-          // lưu mật khẩu trên redux
-          dispatch(storePassWord(values.password));
-          saveLocalStore(USER_LOGIN, res.data.content);
-          saveLocalStore(TOKEN, res.data.content.accessToken);
-          console.log(passWord)
-          messageApi.success("Login successed");
-          setTimeout(() => {
-            navigate("/manage-project/dashboard");
-            window.location.reload(true);
-          }, 3000);
-        })
-        .catch((err) => {
-          console.log(err);
-          messageApi.error("Login failed");
-        });
+    onSubmit: async (values) => {
+      try {
+        const data = await login(values.username, values.password);
+        console.log(data);
+        messageApi.success("Login successful");
+        saveLocalStore(USER_LOGIN, values.username);
+        // saveLocalStore(TOKEN, res.data.content.accessToken);
+        setTimeout(() => {
+          navigate("/manage-project");
+          window.location.reload(true);
+        }, 2000);
+      } catch (error) {
+        messageApi.error("Login failed");
+      }
     },
-    validationSchema: Yup.object().shape({
-      email: Yup.string()
-        .required("Data must be entered in this field.")
-        .email("Email is invalid."),
-      password: Yup.string().required("Data must be entered in this field."),
-    }),
   });
 
-  const { handleSubmit, handleChange, handleBlur, errors, touched } = formik;
+  const { handleSubmit, handleChange, handleBlur } = formik;
   return (
     <>
       {contextHolder}
@@ -69,37 +57,33 @@ const LoginForm = () => {
             className="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white"
             rel="noreferrer"
           >
-            <i className="fa-solid fa-diagram-project text-white-500 hover:text-slate-400">
-              {" "}
-              Project Jira
+            <i className="fa-solid fa-diagram-project text-white hover:text-slate-500 hover:underline">
+              Intrusion Detection System
             </i>
           </Link>
           <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
             <div className="p-6 space-y-4 md:space-y-6 sm:p-8 border-amber-600 shadow-2xl">
               <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                Sign in with your email
+                Sign in with your username
               </h1>
               <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
                 <div>
                   <label
-                    htmlFor="email"
+                    htmlFor="username"
                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                   >
                     <i className="fa-regular fa-user"></i>
-                    <span className="text-base"> Email</span>
+                    <span className="text-base"> Username</span>
                   </label>
                   <input
                     type="text"
-                    name="email"
-                    id="email"
+                    name="username"
+                    id="username"
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="Enter the email"
                     onChange={handleChange}
                     onBlur={handleBlur}
                   />
-                  {touched.email && errors.email ? (
-                    <p className="text-red-500 mt-2">{errors.email}</p>
-                  ) : null}
                 </div>
                 <div className="md:col-span-5 relative">
                   <label
@@ -130,9 +114,6 @@ const LoginForm = () => {
                       <i class="fa-regular fa-eye-slash hover:text-red-500 transition-all ease-in"></i>
                     )}
                   </div>
-                  {touched.password && errors.password ? (
-                    <p className="text-red-500 mt-2">{errors.password}</p>
-                  ) : null}
                 </div>
 
                 <button

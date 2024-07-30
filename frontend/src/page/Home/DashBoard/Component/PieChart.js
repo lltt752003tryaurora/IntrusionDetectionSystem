@@ -15,10 +15,10 @@ const PieChartDB = () => {
     }, [arrAllProjects]);
 
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
+    
     return (
         <div>
-            <PieChart width={400} height={400}>
+            <PieChartDB width={400} height={400}>
                 <Pie
                     dataKey="value"
                     isAnimationActive={false}
@@ -35,7 +35,7 @@ const PieChartDB = () => {
                 </Pie>
                 <Tooltip />
                 <Legend verticalAlign="bottom" align="center" />
-            </PieChart>
+            </PieChartDB>
         </div>
     );
 };

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import CircleIcon from "../../../asset/icons/CircleIcon";
 import Logo from "../../../components/Header/Logo";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setDataUser } from "../../../redux/userSlice";
 import { isLoggedIn } from "../../../util/localStore";
@@ -10,11 +10,16 @@ import SettingOffCanvas from "../../User/SettingOffCanvas/SettingOffCanvas";
 const LandingPage = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.userSlice);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const userLocal = JSON.parse(localStorage.getItem("USER_LOGIN"));
     if (userLocal) {
+      navigate("/manage-project/dashboard");
+      // window.location.reload(true);
       dispatch(setDataUser(userLocal));
+    } else {
+      navigate("/");
     }
   }, []);
   return (
@@ -55,7 +60,7 @@ const LandingPage = () => {
             <div className="flex w-full">
               <div className="flex flex-col flex-1 justify-center items-center">
                 <div className=" text-[5rem] lg:text-[6rem] leading-none font-bold bg-gradient-to-r inline-block from-green-400 to-blue-500 bg-clip-text text-transparent">
-                  Jira TrieAurora
+                  Trieaurora IDS
                 </div>
                 <div className="text-gray-600 dark:text-gray-400 max-w-screen-md py-4 text-center">
                   Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -65,23 +70,21 @@ const LandingPage = () => {
                   nascetur ridiculus mus
                 </div>
                 <div className="flex flex-col items-center">
-                  {
-                    isLoggedIn() ? 
+                  {isLoggedIn() ? (
                     <Link
                       to={"/manage-project/dashboard"}
                       className="bg-slate-700 dark:bg-sky-500 text-white px-5 py-3 rounded-lg font-semibold no-underline select-none"
                     >
                       Go to Dashboard
                     </Link>
-                    :
+                  ) : (
                     <Link
                       to={"/sign-up"}
                       className="bg-slate-700 dark:bg-sky-500 text-white px-5 py-3 rounded-lg font-semibold no-underline select-none"
                     >
                       Getting Started
                     </Link>
-                  }
-                  
+                  )}
                 </div>
               </div>
             </div>

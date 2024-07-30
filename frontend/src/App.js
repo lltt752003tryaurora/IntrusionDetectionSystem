@@ -11,6 +11,8 @@ import CreateProject from "./page/Home/Project/CreateProject";
 import ProjectManagement from "./page/Home/Management/ProjectManagement";
 import ProjectDetail from "./page/Home/Project/ProjectDetail";
 import UserDetails from "./page/Home/Profile/profile";
+import UploadCSV from "./page/Home/Upload/UploadCSV";
+import Monitor from "./page/Home/Monitor/Monitor";
 
 function App() {
   return (
@@ -19,12 +21,9 @@ function App() {
         <Route index element={<LandingPage />} />
         <Route path="/" element={<UserTemplate />}>
           <Route path="manage-project" element={<Home />}>
-            <Route path="dashboard" element={<DashBoard />} />
-            <Route path="project-manage" element={<ProjectManagement />} />
-            <Route path="project-detail/:projectId" element={<ProjectDetail />} />
-            <Route path="project-detail" element={<ProjectDetail />} />
-            <Route path="profile" element={<UserDetails />} />
-            <Route path="create-project" element={<CreateProject />} />
+            <Route path="dashboard" element={<UploadCSV />} />
+            <Route path="monitor" element={<Monitor />} />
+            {/* <Route path="upload" element={<UploadCSV />} /> */}
           </Route>
         </Route>
 
